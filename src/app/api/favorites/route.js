@@ -100,12 +100,18 @@ export async function POST(request) {
     let exhibition;
     if (typeof exhibitionId === 'number' || /^\d+$/.test(exhibitionId)) {
       console.log('Numeric ID detected, finding exhibitions...');
-      // 숫자 ID로 전달된 경우, 순서대로 찾기
-      const exhibitions = await Exhibition.find().sort({ createdAt: 1 }).lean();
+      // exhibitions API와 동일한 방식으로 정렬하여 찾기
+      const exhibitions = await Exhibition.find({}).sort({ startDate: 1 }).lean();
       console.log('Total exhibitions found:', exhibitions.length);
       console.log('Looking for index:', parseInt(exhibitionId) - 1);
       
-      exhibition = exhibitions[parseInt(exhibitionId) - 1];
+      // exhibitions API에서 id를 매기는 방식과 동일하게 처리
+      const exhibitionsWithId = exhibitions.map((exhibition, index) => ({
+        ...exhibition,
+        id: index + 1
+      }));
+      
+      exhibition = exhibitionsWithId.find(ex => ex.id === parseInt(exhibitionId));
       console.log('Found exhibition:', exhibition ? exhibition.title : 'null');
       
       if (exhibition) {

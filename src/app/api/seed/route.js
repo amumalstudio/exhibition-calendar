@@ -15,14 +15,12 @@ async function seedDatabase() {
       };
     }
     
-    // 기존 데이터가 있는지 확인
-    const existingCount = await Exhibition.countDocuments();
-    if (existingCount > 0) {
-      return {
-        success: true,
-        message: `이미 ${existingCount}개의 전시회 데이터가 존재합니다.`,
-        count: existingCount
-      };
+    // 기존 컬렉션을 완전히 삭제하고 다시 생성 (인덱스 초기화)
+    try {
+      await Exhibition.collection.drop();
+      console.log('Dropped existing collection');
+    } catch (error) {
+      console.log('Collection does not exist, creating new one');
     }
 
     const sampleExhibitions = [
@@ -207,4 +205,30 @@ export async function GET() {
 export async function POST() {
   const result = await seedDatabase();
   return NextResponse.json(result, result.success ? { status: 200 } : { status: 500 });
+}
+
+export async function DELETE() {
+  try {
+    const db = await connectToDatabase();
+    if (!db) {
+      return NextResponse.json({
+        success: false,
+        error: 'MongoDB connection failed'
+      }, { status: 500 });
+    }
+    
+    const result = await Exhibition.deleteMany({});
+    return NextResponse.json({
+      success: true,
+      message: `${result.deletedCount}개의 전시회 데이터가 삭제되었습니다.`,
+      deletedCount: result.deletedCount
+    });
+    
+  } catch (error) {
+    console.error('Error clearing database:', error);
+    return NextResponse.json({
+      success: false,
+      error: `Failed to clear database: ${error.message}`
+    }, { status: 500 });
+  }
 }

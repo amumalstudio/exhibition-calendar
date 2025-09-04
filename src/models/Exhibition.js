@@ -18,7 +18,7 @@ const ExhibitionSchema = new mongoose.Schema({
     district: String,
     coordinates: {
       lat: Number,
-      lng: Number,
+      lng: Number
     }
   },
   startDate: {
@@ -73,7 +73,6 @@ const ExhibitionSchema = new mongoose.Schema({
 });
 
 ExhibitionSchema.index({ startDate: 1, endDate: 1 });
-ExhibitionSchema.index({ location: '2dsphere' });
 ExhibitionSchema.index({ category: 1 });
 
 export default mongoose.models.Exhibition || mongoose.model('Exhibition', ExhibitionSchema);

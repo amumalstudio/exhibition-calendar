@@ -94,7 +94,19 @@ export async function POST(request) {
       });
     }
 
-    const exhibition = await Exhibition.findById(exhibitionId);
+    // 숫자 ID인 경우 실제 ObjectId로 변환 필요
+    let exhibition;
+    if (typeof exhibitionId === 'number' || /^\d+$/.test(exhibitionId)) {
+      // 숫자 ID로 전달된 경우, 순서대로 찾기
+      const exhibitions = await Exhibition.find().sort({ createdAt: 1 }).lean();
+      exhibition = exhibitions[parseInt(exhibitionId) - 1];
+      if (exhibition) {
+        exhibitionId = exhibition._id.toString(); // 실제 ObjectId로 교체
+      }
+    } else {
+      exhibition = await Exhibition.findById(exhibitionId);
+    }
+    
     if (!exhibition) {
       return NextResponse.json(
         { success: false, error: 'Exhibition not found' },

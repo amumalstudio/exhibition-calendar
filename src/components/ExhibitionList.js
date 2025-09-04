@@ -133,7 +133,15 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
       {exhibitions.map((exhibition) => {
         console.log('Full Exhibition Object:', exhibition);
         console.log('Exhibition keys:', Object.keys(exhibition));
-        const id = exhibition._id || exhibition.id;
+        
+        // ID 찾기 - 여러 방법 시도
+        let id = exhibition._id || exhibition.id;
+        
+        // 만약 여전히 undefined라면 title 기반으로 임시 ID 생성
+        if (!id) {
+          id = exhibition.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        }
+        
         console.log('Exhibition:', exhibition.title, 'ID:', id, 'Type:', typeof id);
         return (
         <div key={id || exhibition.title} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">

@@ -2,11 +2,19 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Exhibition from '@/models/Exhibition';
 
-export async function POST() {
+async function seedDatabase() {
   try {
     await connectToDatabase();
     
-    await Exhibition.deleteMany({});
+    // 기존 데이터가 있는지 확인
+    const existingCount = await Exhibition.countDocuments();
+    if (existingCount > 0) {
+      return {
+        success: true,
+        message: `이미 ${existingCount}개의 전시회 데이터가 존재합니다.`,
+        count: existingCount
+      };
+    }
 
     const sampleExhibitions = [
       {
@@ -166,17 +174,27 @@ export async function POST() {
 
     const insertedExhibitions = await Exhibition.insertMany(sampleExhibitions);
 
-    return NextResponse.json({
+    return {
       success: true,
       message: `${insertedExhibitions.length}개의 전시회 데이터가 생성되었습니다.`,
       count: insertedExhibitions.length
-    });
+    };
 
   } catch (error) {
     console.error('Error seeding database:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to seed database' },
-      { status: 500 }
-    );
+    return {
+      success: false, 
+      error: 'Failed to seed database'
+    };
   }
+}
+
+export async function GET() {
+  const result = await seedDatabase();
+  return NextResponse.json(result, result.success ? { status: 200 } : { status: 500 });
+}
+
+export async function POST() {
+  const result = await seedDatabase();
+  return NextResponse.json(result, result.success ? { status: 200 } : { status: 500 });
 }

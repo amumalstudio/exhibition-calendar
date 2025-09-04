@@ -94,16 +94,26 @@ export async function POST(request) {
       });
     }
 
+    console.log('Original exhibitionId:', exhibitionId, 'Type:', typeof exhibitionId);
+    
     // 숫자 ID인 경우 실제 ObjectId로 변환 필요
     let exhibition;
     if (typeof exhibitionId === 'number' || /^\d+$/.test(exhibitionId)) {
+      console.log('Numeric ID detected, finding exhibitions...');
       // 숫자 ID로 전달된 경우, 순서대로 찾기
       const exhibitions = await Exhibition.find().sort({ createdAt: 1 }).lean();
+      console.log('Total exhibitions found:', exhibitions.length);
+      console.log('Looking for index:', parseInt(exhibitionId) - 1);
+      
       exhibition = exhibitions[parseInt(exhibitionId) - 1];
+      console.log('Found exhibition:', exhibition ? exhibition.title : 'null');
+      
       if (exhibition) {
         exhibitionId = exhibition._id.toString(); // 실제 ObjectId로 교체
+        console.log('Converted to ObjectId:', exhibitionId);
       }
     } else {
+      console.log('Using ObjectId directly');
       exhibition = await Exhibition.findById(exhibitionId);
     }
     

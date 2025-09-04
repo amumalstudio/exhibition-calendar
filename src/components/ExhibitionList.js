@@ -53,6 +53,8 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
 
       const data = await response.json();
       
+      console.log('Favorites API response:', data);
+      
       if (data.success) {
         const newFavorites = new Set(favorites);
         if (data.data.isFavorite) {
@@ -62,6 +64,7 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
         }
         setFavorites(newFavorites);
       } else {
+        console.error('Favorites API error:', data);
         alert('오류: ' + data.error);
       }
     } catch (error) {

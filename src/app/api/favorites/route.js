@@ -114,11 +114,13 @@ export async function POST(request) {
       );
     }
 
-    const isFavorite = user.favorites.includes(exhibitionId);
+    // ObjectId로 변환된 실제 ID 사용
+    const actualId = exhibition._id;
+    const isFavorite = user.favorites.some(fav => fav.toString() === actualId.toString());
 
     if (isFavorite) {
       await User.findByIdAndUpdate(user._id, {
-        $pull: { favorites: exhibitionId }
+        $pull: { favorites: actualId }
       });
       
       return NextResponse.json({
@@ -128,7 +130,7 @@ export async function POST(request) {
       });
     } else {
       await User.findByIdAndUpdate(user._id, {
-        $addToSet: { favorites: exhibitionId }
+        $addToSet: { favorites: actualId }
       });
       
       return NextResponse.json({

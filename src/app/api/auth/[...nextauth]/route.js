@@ -13,20 +13,22 @@ const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        await connectToDatabase();
+        const db = await connectToDatabase();
         
-        let existingUser = await User.findOne({
-          email: user.email,
-        });
-
-        if (!existingUser) {
-          existingUser = await User.create({
-            name: user.name,
+        if (db) {
+          let existingUser = await User.findOne({
             email: user.email,
-            image: user.image,
-            provider: account.provider,
-            providerId: account.providerAccountId,
           });
+
+          if (!existingUser) {
+            existingUser = await User.create({
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              provider: account.provider,
+              providerId: account.providerAccountId,
+            });
+          }
         }
 
         return true;
@@ -37,11 +39,13 @@ const authOptions = {
     },
     async session({ session, token }) {
       try {
-        await connectToDatabase();
+        const db = await connectToDatabase();
         
-        const dbUser = await User.findOne({ email: session.user.email });
-        if (dbUser) {
-          session.user.id = dbUser._id.toString();
+        if (db) {
+          const dbUser = await User.findOne({ email: session.user.email });
+          if (dbUser) {
+            session.user.id = dbUser._id.toString();
+          }
         }
       } catch (error) {
         console.error('Error during session:', error);

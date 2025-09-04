@@ -1,19 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { HeartIcon, HeartSolidIcon, StarIcon, StarSolidIcon } from './Icons';
 
 export default function ExhibitionList({ exhibitions = [], selectedDate }) {
+  const { data: session } = useSession();
   const [favorites, setFavorites] = useState(new Set());
+  const [loading, setLoading] = useState(false);
 
-  const toggleFavorite = (exhibitionId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(exhibitionId)) {
-      newFavorites.delete(exhibitionId);
-    } else {
-      newFavorites.add(exhibitionId);
+  // 즐겨찾기 목록 불러오기
+  useEffect(() => {
+    if (session) {
+      fetchFavorites();
     }
-    setFavorites(newFavorites);
+  }, [session]);
+
+  const fetchFavorites = async () => {
+    try {
+      const response = await fetch('/api/favorites');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const favoriteIds = data.data.map(item => item._id);
+          setFavorites(new Set(favoriteIds));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (exhibitionId) => {
+    if (!session) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ exhibitionId }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        const newFavorites = new Set(favorites);
+        if (data.data.isFavorite) {
+          newFavorites.add(exhibitionId);
+        } else {
+          newFavorites.delete(exhibitionId);
+        }
+        setFavorites(newFavorites);
+      } else {
+        alert('오류: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('즐겨찾기 처리 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (date) => {
@@ -96,9 +150,12 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             
             <button
               onClick={() => toggleFavorite(exhibition.id || exhibition._id)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              disabled={loading}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
             >
-              {favorites.has(exhibition.id || exhibition._id) ? (
+              {loading ? (
+                <div className="h-6 w-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+              ) : favorites.has(exhibition.id || exhibition._id) ? (
                 <HeartSolidIcon className="h-6 w-6 text-red-500" />
               ) : (
                 <HeartIcon className="h-6 w-6 text-gray-400" />

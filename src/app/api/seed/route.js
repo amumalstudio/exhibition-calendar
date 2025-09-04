@@ -4,7 +4,16 @@ import Exhibition from '@/models/Exhibition';
 
 async function seedDatabase() {
   try {
-    await connectToDatabase();
+    console.log('Attempting to connect to MongoDB...');
+    const db = await connectToDatabase();
+    console.log('MongoDB connection status:', db ? 'Connected' : 'Failed');
+    
+    if (!db) {
+      return {
+        success: false,
+        error: 'MongoDB connection failed'
+      };
+    }
     
     // 기존 데이터가 있는지 확인
     const existingCount = await Exhibition.countDocuments();
@@ -184,7 +193,8 @@ async function seedDatabase() {
     console.error('Error seeding database:', error);
     return {
       success: false, 
-      error: 'Failed to seed database'
+      error: `Failed to seed database: ${error.message}`,
+      details: error.toString()
     };
   }
 }

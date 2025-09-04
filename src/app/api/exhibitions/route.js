@@ -49,10 +49,16 @@ export async function GET(request) {
       .sort({ startDate: 1 })
       .lean();
 
+    // MongoDB ObjectId를 문자열로 변환
+    const exhibitionsWithId = exhibitions.map(exhibition => ({
+      ...exhibition,
+      _id: exhibition._id.toString()
+    }));
+
     return NextResponse.json({
       success: true,
-      data: exhibitions,
-      count: exhibitions.length
+      data: exhibitionsWithId,
+      count: exhibitionsWithId.length
     });
 
   } catch (error) {

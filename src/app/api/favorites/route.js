@@ -17,7 +17,7 @@ export async function GET(request) {
 
     await connectToDatabase();
     
-    const user = await User.findOne({ email: session.user.email })
+    let user = await User.findOne({ email: session.user.email })
       .populate({
         path: 'favorites',
         model: Exhibition
@@ -25,10 +25,17 @@ export async function GET(request) {
       .lean();
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      // 사용자가 없으면 생성
+      const newUser = await User.create({
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        provider: 'google',
+        providerId: session.user.email, // 임시로 email 사용
+        favorites: []
+      });
+      
+      user = { favorites: [] }; // 빈 favorites로 응답
     }
 
     return NextResponse.json({
@@ -68,12 +75,17 @@ export async function POST(request) {
       );
     }
 
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      // 사용자가 없으면 생성
+      user = await User.create({
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        provider: 'google',
+        providerId: session.user.email, // 임시로 email 사용
+        favorites: []
+      });
     }
 
     const exhibition = await Exhibition.findById(exhibitionId);
@@ -110,8 +122,13 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Error toggling favorite:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to toggle favorite' },
+      { success: false, error: `Failed to toggle favorite: ${error.message}` },
       { status: 500 }
     );
   }

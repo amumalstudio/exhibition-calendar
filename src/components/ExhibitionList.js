@@ -129,7 +129,7 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
       </div>
 
       {exhibitions.map((exhibition) => (
-        <div key={exhibition.id || exhibition._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div key={exhibition._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <h4 className="text-xl font-bold text-gray-900 mb-2">
@@ -149,13 +149,13 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             </div>
             
             <button
-              onClick={() => toggleFavorite(exhibition.id || exhibition._id)}
+              onClick={() => toggleFavorite(exhibition._id)}
               disabled={loading}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
             >
               {loading ? (
                 <div className="h-6 w-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-              ) : favorites.has(exhibition.id || exhibition._id) ? (
+              ) : favorites.has(exhibition._id) ? (
                 <HeartSolidIcon className="h-6 w-6 text-red-500" />
               ) : (
                 <HeartIcon className="h-6 w-6 text-gray-400" />
@@ -210,7 +210,7 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
 
             <div className="flex space-x-2">
               <a
-                href={`/exhibitions/${exhibition.id || exhibition._id}`}
+                href={`/exhibitions/${exhibition._id}`}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 상세보기

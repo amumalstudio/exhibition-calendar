@@ -50,10 +50,10 @@ export async function GET(request) {
       .lean();
 
     // MongoDB ObjectId를 문자열로 변환하고 id 필드도 추가
-    const exhibitionsWithId = exhibitions.map(exhibition => ({
+    const exhibitionsWithId = exhibitions.map((exhibition, index) => ({
       ...exhibition,
       _id: exhibition._id?.toString() || Math.random().toString(36).substr(2, 9),
-      id: exhibition._id?.toString() || Math.random().toString(36).substr(2, 9)
+      id: index + 1  // 1, 2, 3... 순서대로 ID 부여
     }));
 
     return NextResponse.json({

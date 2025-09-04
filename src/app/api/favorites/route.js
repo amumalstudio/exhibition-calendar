@@ -96,30 +96,28 @@ export async function POST(request) {
 
     console.log('Original exhibitionId:', exhibitionId, 'Type:', typeof exhibitionId);
     
-    // 숫자 ID인 경우 실제 ObjectId로 변환 필요
+    // 모든 전시회를 가져와서 ID 매핑
+    const allExhibitions = await Exhibition.find({}).sort({ startDate: 1 }).lean();
+    console.log('Total exhibitions in DB:', allExhibitions.length);
+    
     let exhibition;
+    let actualObjectId;
+    
+    // 숫자 ID인 경우 매핑
     if (typeof exhibitionId === 'number' || /^\d+$/.test(exhibitionId)) {
-      console.log('Numeric ID detected, finding exhibitions...');
-      // exhibitions API와 동일한 방식으로 정렬하여 찾기
-      const exhibitions = await Exhibition.find({}).sort({ startDate: 1 }).lean();
-      console.log('Total exhibitions found:', exhibitions.length);
-      console.log('Looking for index:', parseInt(exhibitionId) - 1);
+      const numericId = parseInt(exhibitionId);
+      console.log('Looking for exhibition with ID:', numericId);
       
-      // exhibitions API에서 id를 매기는 방식과 동일하게 처리
-      const exhibitionsWithId = exhibitions.map((exhibition, index) => ({
-        ...exhibition,
-        id: index + 1
-      }));
-      
-      exhibition = exhibitionsWithId.find(ex => ex.id === parseInt(exhibitionId));
-      console.log('Found exhibition:', exhibition ? exhibition.title : 'null');
-      
-      if (exhibition) {
-        exhibitionId = exhibition._id.toString(); // 실제 ObjectId로 교체
-        console.log('Converted to ObjectId:', exhibitionId);
+      if (numericId >= 1 && numericId <= allExhibitions.length) {
+        exhibition = allExhibitions[numericId - 1]; // 1-based to 0-based index
+        actualObjectId = exhibition._id;
+        console.log('Found exhibition:', exhibition.title, 'ObjectId:', actualObjectId);
+      } else {
+        console.log('ID out of range:', numericId, 'Available range: 1-' + allExhibitions.length);
       }
     } else {
       console.log('Using ObjectId directly');
+      actualObjectId = exhibitionId;
       exhibition = await Exhibition.findById(exhibitionId);
     }
     
@@ -131,12 +129,11 @@ export async function POST(request) {
     }
 
     // ObjectId로 변환된 실제 ID 사용
-    const actualId = exhibition._id;
-    const isFavorite = user.favorites.some(fav => fav.toString() === actualId.toString());
+    const isFavorite = user.favorites.some(fav => fav.toString() === actualObjectId.toString());
 
     if (isFavorite) {
       await User.findByIdAndUpdate(user._id, {
-        $pull: { favorites: actualId }
+        $pull: { favorites: actualObjectId }
       });
       
       return NextResponse.json({
@@ -146,7 +143,7 @@ export async function POST(request) {
       });
     } else {
       await User.findByIdAndUpdate(user._id, {
-        $addToSet: { favorites: actualId }
+        $addToSet: { favorites: actualObjectId }
       });
       
       return NextResponse.json({

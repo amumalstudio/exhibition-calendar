@@ -153,7 +153,11 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             </div>
             
             <button
-              onClick={() => toggleFavorite(exhibition._id)}
+              onClick={() => {
+                const id = exhibition._id || exhibition.id;
+                console.log('Button clicked - ID:', id, 'Exhibition:', exhibition);
+                toggleFavorite(id);
+              }}
               disabled={loading}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
             >

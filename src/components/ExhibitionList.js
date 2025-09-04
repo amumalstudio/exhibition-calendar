@@ -131,9 +131,12 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
       </div>
 
       {exhibitions.map((exhibition) => {
-        console.log('Exhibition:', exhibition.title, 'ID:', exhibition._id, 'Type:', typeof exhibition._id);
+        console.log('Full Exhibition Object:', exhibition);
+        console.log('Exhibition keys:', Object.keys(exhibition));
+        const id = exhibition._id || exhibition.id;
+        console.log('Exhibition:', exhibition.title, 'ID:', id, 'Type:', typeof id);
         return (
-        <div key={exhibition._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div key={id || exhibition.title} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
               <h4 className="text-xl font-bold text-gray-900 mb-2">
@@ -154,7 +157,6 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             
             <button
               onClick={() => {
-                const id = exhibition._id || exhibition.id;
                 console.log('Button clicked - ID:', id, 'Exhibition:', exhibition);
                 toggleFavorite(id);
               }}
@@ -163,7 +165,7 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             >
               {loading ? (
                 <div className="h-6 w-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-              ) : favorites.has(exhibition._id) ? (
+              ) : favorites.has(id) ? (
                 <HeartSolidIcon className="h-6 w-6 text-red-500" />
               ) : (
                 <HeartIcon className="h-6 w-6 text-gray-400" />
@@ -218,7 +220,7 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
 
             <div className="flex space-x-2">
               <a
-                href={`/exhibitions/${exhibition._id}`}
+                href={`/exhibitions/${id}`}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 상세보기

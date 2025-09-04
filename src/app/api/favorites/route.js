@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]/route';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
 import Exhibition from '@/models/Exhibition';
 
 export async function GET(request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session) {
       return NextResponse.json(
@@ -46,8 +47,13 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('Error fetching favorites:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch favorites' },
+      { success: false, error: `Failed to fetch favorites: ${error.message}` },
       { status: 500 }
     );
   }
@@ -55,7 +61,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session) {
       return NextResponse.json(

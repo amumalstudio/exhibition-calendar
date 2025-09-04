@@ -39,6 +39,8 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
 
     if (loading) return;
 
+    console.log('Toggling favorite for ID:', exhibitionId, 'Type:', typeof exhibitionId);
+
     setLoading(true);
     try {
       const response = await fetch('/api/favorites', {
@@ -128,7 +130,9 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
         </h3>
       </div>
 
-      {exhibitions.map((exhibition) => (
+      {exhibitions.map((exhibition) => {
+        console.log('Exhibition:', exhibition.title, 'ID:', exhibition._id, 'Type:', typeof exhibition._id);
+        return (
         <div key={exhibition._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1">
@@ -236,7 +240,8 @@ export default function ExhibitionList({ exhibitions = [], selectedDate }) {
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
